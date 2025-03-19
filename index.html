@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work Time Countdown</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+        .countdown-card {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+        .time-display {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .earnings-display {
+            color: #059669;
+            text-shadow: 0 1px 2px rgba(5, 150, 105, 0.1);
+            font-size: 1.75rem;
+        }
+        .holiday-display {
+            color: #7c3aed;
+            text-shadow: 0 1px 2px rgba(124, 58, 237, 0.1);
+        }
+        .tired-worker {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgdmlld0JveD0iMCAwIDgwMCA2MDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTQwMCA1MDBjMTAwLTEwMCAyMDAtMTAwIDMwMC01MHMxMDAgMTAwIDEwMCAxNTBjLTEwMCAwLTIwMCA1MC0zMDAgNTBzLTIwMC01MC0zMDAtNTBjMC01MCAwLTEwMCAxMDAtMTUwczEwMC01MCAyMDAgNTB6IiBmaWxsPSIjZGRkIi8+PHBhdGggZD0iTTQwMCA0NTBjMC0xMDAgMC0yMDAgMC0zMDAiIHN0cm9rZT0iI2RkZCIgc3Ryb2tlLXdpZHRoPSIxMCIvPjwvc3ZnPg==') no-repeat bottom center;
+            background-size: contain;
+            opacity: 0.05;
+            z-index: -1;
+            pointer-events: none;
+        }
+        .money-rain {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            animation: moneyRain 2s infinite;
+            opacity: 0;
+        }
+        @keyframes moneyRain {
+            0% { transform: translateY(0) translateX(-50%); opacity: 1; }
+            100% { transform: translateY(60px) translateX(-50%); opacity: 0; }
+        }
+        .card-label {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        .footer-message {
+            font-size: 1rem;
+            color: #6b7280;
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+    </style>
+</head>
+<body class="min-h-screen font-sans">
+    <div class="tired-worker"></div>
+    <div id="setup" class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-bold text-center mb-8 text-gray-800">Work Time Countdown</h1>
+        <div class="max-w-md mx-auto bg-white rounded-2xl shadow-lg p-8">
+            <div class="mb-6">
+                <label class="block text-lg font-medium mb-3 text-gray-700">Working Days</label>
+                <div class="grid grid-cols-7 gap-2">
+                    <button data-day="0" class="day-btn p-2 rounded-lg border border-gray-300 hover:bg-blue-50 transition-all">Sun</button>
+                    <button data-day="1" class="day-btn p-2 rounded-lg border border-gray-300 selected bg-blue-500 text-white">Mon</button>
+                    <button data-day="2" class="day-btn p-2 rounded-lg border border-gray-300 selected bg-blue-500 text-white">Tue</button>
+                    <button data-day="3" class="day-btn p-2 rounded-lg border border-gray-300 selected bg-blue-500 text-white">Wed</button>
+                    <button data-day="4" class="day-btn p-2 rounded-lg border border-gray-300 selected bg-blue-500 text-white">Thu</button>
+                    <button data-day="5" class="day-btn p-2 rounded-lg border border-gray-300 selected bg-blue-500 text-white">Fri</button>
+                    <button data-day="6" class="day-btn p-2 rounded-lg border border-gray-300 hover:bg-blue-50 transition-all">Sat</button>
+                </div>
+            </div>
+            <div class="mb-6">
+                <label class="block text-lg font-medium mb-3 text-gray-700">Work Hours</label>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm mb-1 text-gray-600">Start Time</label>
+                        <input type="time" id="startTime" class="w-full border border-gray-300 rounded-lg p-2" value="09:00">
+                    </div>
+                    <div>
+                        <label class="block text-sm mb-1 text-gray-600">End Time</label>
+                        <input type="time" id="endTime" class="w-full border border-gray-300 rounded-lg p-2" value="18:00">
+                    </div>
+                </div>
+            </div>
+            <div class="mb-6">
+                <label class="block text-lg font-medium mb-3 text-gray-700">Payday</label>
+                <input type="number" id="payday" min="1" max="31" class="w-full border border-gray-300 rounded-lg p-2" value="15">
+            </div>
+            <div class="mb-6">
+                <label class="block text-lg font-medium mb-3 text-gray-700">Daily Income</label>
+                <div class="grid grid-cols-4 gap-4">
+                    <div class="col-span-1">
+                        <label class="block text-sm mb-1 text-gray-600">Currency</label>
+                        <select id="currency" class="w-full border border-gray-300 rounded-lg p-2">
+                            <option value="USD">USD</option>
+                            <option value="CNY">CNY</option>
+                            <option value="EUR">EUR</option>
+                            <option value="GBP">GBP</option>
+                            <option value="JPY">JPY</option>
+                        </select>
+                    </div>
+                    <div class="col-span-3">
+                        <label class="block text-sm mb-1 text-gray-600">Amount</label>
+                        <input type="number" id="dailyIncome" class="w-full border border-gray-300 rounded-lg p-2" value="100">
+                    </div>
+                </div>
+            </div>
+            <button id="saveSettings" class="w-full bg-blue-500 text-white rounded-lg py-3 px-4 hover:bg-blue-600 transition-all transform hover:scale-105">
+                Start Counting
+            </button>
+        </div>
+    </div>
+
+    <div id="dashboard" class="container mx-auto px-4 py-8 hidden">
+        <div class="max-w-lg mx-auto">
+            <div class="countdown-card p-8 relative">
+                <div class="space-y-6">
+                    <div class="text-center">
+                        <div class="card-label mb-2">Time Until Freedom</div>
+                        <div class="time-display text-8xl font-bold tracking-wider pulse" id="timeUntilEndOfWork"></div>
+                    </div>
+                    <div class="grid grid-cols-4 gap-6 mt-8">
+                        <div class="text-center">
+                            <div class="card-label mb-1">Next Payday</div>
+                            <div class="text-xl font-bold text-blue-600"><span id="daysUntilPayday">0</span></div>
+                        </div>
+                        <div class="text-center">
+                            <div class="card-label mb-1">Next Holiday</div>
+                            <div class="holiday-display text-xl font-bold" id="nextHoliday">Loading...</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="card-label mb-1">Workdays Left</div>
+                            <div class="text-xl font-bold text-blue-600"><span id="workdaysLeft">0</span></div>
+                        </div>
+                        <div class="text-center relative">
+                            <div class="money-rain">💰</div>
+                            <div class="card-label mb-1">Earned Today</div>
+                            <div class="earnings-display font-bold pulse" id="todayEarnings">0.00</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button id="editSettings" class="mt-8 w-full bg-gray-500 text-white rounded-lg py-2 px-4 hover:bg-gray-600 transition-all">
+                Edit Settings
+            </button>
+            <div class="footer-message">
+                Keep grinding... or maybe it's time to quiet quit? 🤔
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
