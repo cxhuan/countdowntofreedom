@@ -77,10 +77,10 @@
 <body class="min-h-screen font-sans">
     <div class="tired-worker"></div>
     <div id="setup" class="container mx-auto px-4 py-8">
-        <h1 class="text-4xl font-bold text-center mb-8 text-gray-800">Work Time Countdown</h1>
+        <h1 class="text-4xl font-bold text-center mb-8 text-gray-800" id="setupTitle">Work Time Countdown</h1>
         <div class="max-w-md mx-auto bg-white rounded-2xl shadow-lg p-8">
             <div class="mb-6">
-                <label class="block text-lg font-medium mb-3 text-gray-700">Working Days</label>
+                <label class="block text-lg font-medium mb-3 text-gray-700" id="workingDaysLabel">Working Days</label>
                 <div class="grid grid-cols-7 gap-2">
                     <button data-day="0" class="day-btn p-2 rounded-lg border border-gray-300 hover:bg-blue-50 transition-all">Sun</button>
                     <button data-day="1" class="day-btn p-2 rounded-lg border border-gray-300 selected bg-blue-500 text-white">Mon</button>
@@ -92,27 +92,27 @@
                 </div>
             </div>
             <div class="mb-6">
-                <label class="block text-lg font-medium mb-3 text-gray-700">Work Hours</label>
+                <label class="block text-lg font-medium mb-3 text-gray-700" id="workHoursLabel">Work Hours</label>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm mb-1 text-gray-600">Start Time</label>
+                        <label class="block text-sm mb-1 text-gray-600" id="startTimeLabel">Start Time</label>
                         <input type="time" id="startTime" class="w-full border border-gray-300 rounded-lg p-2" value="09:00">
                     </div>
                     <div>
-                        <label class="block text-sm mb-1 text-gray-600">End Time</label>
+                        <label class="block text-sm mb-1 text-gray-600" id="endTimeLabel">End Time</label>
                         <input type="time" id="endTime" class="w-full border border-gray-300 rounded-lg p-2" value="18:00">
                     </div>
                 </div>
             </div>
             <div class="mb-6">
-                <label class="block text-lg font-medium mb-3 text-gray-700">Payday</label>
+                <label class="block text-lg font-medium mb-3 text-gray-700" id="paydayLabel">Payday</label>
                 <input type="number" id="payday" min="1" max="31" class="w-full border border-gray-300 rounded-lg p-2" value="15">
             </div>
             <div class="mb-6">
-                <label class="block text-lg font-medium mb-3 text-gray-700">Daily Income</label>
+                <label class="block text-lg font-medium mb-3 text-gray-700" id="dailyIncomeLabel">Daily Income</label>
                 <div class="grid grid-cols-4 gap-4">
                     <div class="col-span-1">
-                        <label class="block text-sm mb-1 text-gray-600">Currency</label>
+                        <label class="block text-sm mb-1 text-gray-600" id="currencyLabel">Currency</label>
                         <select id="currency" class="w-full border border-gray-300 rounded-lg p-2">
                             <option value="USD">USD</option>
                             <option value="CNY">CNY</option>
@@ -122,7 +122,7 @@
                         </select>
                     </div>
                     <div class="col-span-3">
-                        <label class="block text-sm mb-1 text-gray-600">Amount</label>
+                        <label class="block text-sm mb-1 text-gray-600" id="amountLabel">Amount</label>
                         <input type="number" id="dailyIncome" class="w-full border border-gray-300 rounded-lg p-2" value="100">
                     </div>
                 </div>
@@ -138,26 +138,26 @@
             <div class="countdown-card p-8 relative">
                 <div class="space-y-6">
                     <div class="text-center">
-                        <div class="card-label mb-2">Time Until Freedom</div>
+                        <div class="card-label mb-2" id="timeUntilFreedomLabel">Time Until Freedom</div>
                         <div class="time-display text-8xl font-bold tracking-wider pulse" id="timeUntilEndOfWork"></div>
                     </div>
                     <div class="grid grid-cols-4 gap-6 mt-8">
                         <div class="text-center">
-                            <div class="card-label mb-1">Next Payday</div>
+                            <div class="card-label mb-1" id="nextPaydayLabel">Next Payday</div>
                             <div class="text-xl font-bold text-blue-600"><span id="daysUntilPayday">0</span></div>
                         </div>
                         <div class="text-center">
-                            <div class="card-label mb-1">Next Holiday</div>
+                            <div class="card-label mb-1" id="nextHolidayLabel">Next Holiday</div>
                             <div class="holiday-display text-xl font-bold" id="nextHoliday">Loading...</div>
                         </div>
                         <div class="text-center">
-                            <div class="card-label mb-1">Workdays Left</div>
+                            <div class="card-label mb-1" id="workdaysLeftLabel">Workdays Left</div>
                             <div class="text-xl font-bold text-blue-600"><span id="workdaysLeft">0</span></div>
                         </div>
                         <div class="text-center relative">
                             <div class="money-rain">💰</div>
-                            <div class="card-label mb-1">Earned Today</div>
-                            <div class="earnings-display font-bold pulse" id="todayEarnings">0.00</div>
+                            <div class="card-label mb-1" id="earnedTodayLabel">Earned Today</div>
+                            <div class="earnings-display font-bold pulse" id="todayEarnings">0.000</div>
                         </div>
                     </div>
                 </div>
@@ -166,7 +166,7 @@
             <button id="editSettings" class="mt-8 w-full bg-gray-500 text-white rounded-lg py-2 px-4 hover:bg-gray-600 transition-all">
                 Edit Settings
             </button>
-            <div class="footer-message">
+            <div class="footer-message" id="footerMessage">
                 Keep grinding... or maybe it's time to quiet quit? 🤔
             </div>
         </div>
