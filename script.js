@@ -1,3 +1,191 @@
+// Supabase配置
+const SUPABASE_URL = 'https://ncywmtlhjhzgvvjjshwo.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jeXdtdGxoamh6Z3Z2ampzaHdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2MDc5NDIsImV4cCI6MjA1ODE4Mzk0Mn0.RaBRSXov-5lY8i61mxBWRbl2yYgvTt4jwUgeQ0-Ec0g';
+
+// 创建Supabase客户端
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// 弹幕功能
+const danmakuContainer = document.getElementById('danmakuContainer');
+const danmakuColors = ['#fff', '#ff69b4', '#7fffd4', '#ffd700', '#90ee90', '#87cefa'];
+let lastDanmakuTime = 0;
+let danmakuQueue = []; // 存储所有弹幕
+let lastFetchTime = 0;
+const FETCH_INTERVAL = 5000; // 每5秒从服务器获取新弹幕
+
+// 从Supabase获取弹幕
+async function fetchDanmaku() {
+    try {
+        const { data, error } = await supabase
+            .from('danmaku')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(100);
+
+        if (error) throw error;
+
+        // 更新弹幕队列，保留现有的弹幕
+        const newDanmaku = data.filter(d => !danmakuQueue.some(existing => existing.id === d.id));
+        danmakuQueue.push(...newDanmaku);
+        
+        // 如果队列太长，删除旧的弹幕
+        if (danmakuQueue.length > 200) {
+            danmakuQueue = danmakuQueue.slice(-200);
+        }
+    } catch (error) {
+        console.error('获取弹幕失败:', error);
+    }
+}
+
+// 订阅实时弹幕更新
+const danmakuSubscription = supabase
+    .channel('danmaku_channel')
+    .on('postgres_changes', 
+        {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'danmaku'
+        },
+        (payload) => {
+            const newDanmaku = payload.new;
+            if (!danmakuQueue.some(d => d.id === newDanmaku.id)) {
+                danmakuQueue.push(newDanmaku);
+                createDanmaku(newDanmaku.text, newDanmaku.color);
+            }
+        }
+    )
+    .subscribe();
+
+// 发送弹幕到Supabase
+async function saveDanmaku(text, color) {
+    try {
+        const { data, error } = await supabase
+            .from('danmaku')
+            .insert([
+                {
+                    text,
+                    color,
+                    created_at: new Date().toISOString()
+                }
+            ]);
+
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('发送弹幕失败:', error);
+    }
+}
+
+function createDanmaku(text, color, isSystem = false) {
+    const now = Date.now();
+    if (!isSystem && now - lastDanmakuTime < 1000) {
+        return; // 限制发送频率
+    }
+    lastDanmakuTime = now;
+
+    const danmaku = document.createElement('div');
+    danmaku.className = 'danmaku';
+    danmaku.textContent = text;
+    danmaku.style.color = color;
+    
+    // 随机垂直位置，但确保不会重叠
+    const height = 30; // 弹幕高度
+    const maxTop = danmakuContainer.offsetHeight - height;
+    const availablePositions = Array.from({ length: Math.floor(maxTop / height) }, (_, i) => i * height);
+    const usedPositions = Array.from(danmakuContainer.getElementsByClassName('danmaku')).map(d => parseInt(d.style.top));
+    const availableSlots = availablePositions.filter(pos => !usedPositions.includes(pos));
+    
+    let top;
+    if (availableSlots.length > 0) {
+        top = availableSlots[Math.floor(Math.random() * availableSlots.length)];
+    } else {
+        // 如果所有位置都被占用，随机选择一个位置
+        top = Math.floor(Math.random() * maxTop);
+    }
+    danmaku.style.top = `${top}px`;
+    
+    // 根据文本长度调整动画时间
+    const duration = Math.max(15, 10 + text.length * 0.5); // 最少15秒
+    danmaku.style.animationDuration = `${duration}s`;
+    
+    danmakuContainer.appendChild(danmaku);
+    
+    // 动画结束后移除弹幕
+    danmaku.addEventListener('animationend', () => {
+        danmaku.remove();
+    });
+}
+
+// 轮播弹幕队列
+function playDanmakuQueue() {
+    if (danmakuQueue.length === 0) return;
+    
+    // 随机选择一条弹幕播放
+    const index = Math.floor(Math.random() * danmakuQueue.length);
+    const danmaku = danmakuQueue[index];
+    createDanmaku(danmaku.text, danmaku.color);
+}
+
+async function sendDanmaku() {
+    const input = document.getElementById('danmakuText');
+    const text = input.value.trim();
+    
+    if (text) {
+        const color = danmakuColors[Math.floor(Math.random() * danmakuColors.length)];
+        createDanmaku(text, color);
+        await saveDanmaku(text, color);
+        input.value = '';
+    }
+}
+
+// 添加回车发送功能
+document.getElementById('danmakuText').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        sendDanmaku();
+    }
+});
+
+// 系统弹幕
+async function sendSystemDanmaku() {
+    const messages = [
+        '马上就要下班啦！',
+        '努力工作，开心生活！',
+        '记得喝水哦～',
+        '工资快到账啦！',
+        '周末加油！'
+    ];
+    
+    // 随机选择一条消息
+    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+    const color = danmakuColors[Math.floor(Math.random() * danmakuColors.length)];
+    createDanmaku(randomMessage, color, true);
+    await saveDanmaku(randomMessage, color);
+}
+
+// 初始化时获取弹幕
+fetchDanmaku();
+
+// 定期获取新弹幕（作为备份，以防实时订阅失败）
+setInterval(async () => {
+    const now = Date.now();
+    if (now - lastFetchTime >= FETCH_INTERVAL) {
+        await fetchDanmaku();
+        lastFetchTime = now;
+    }
+}, FETCH_INTERVAL);
+
+// 定期播放弹幕队列
+setInterval(() => {
+    playDanmakuQueue();
+}, 2000); // 每2秒播放一条弹幕
+
+// 每隔30-60秒随机发送一条系统弹幕
+setInterval(() => {
+    if (Math.random() < 0.3) { // 30%的概率发送
+        sendSystemDanmaku();
+    }
+}, 30000);
+
 const CURRENCY_CONFIG = {
     USD: {
         locale: 'en-US',
@@ -35,7 +223,9 @@ const CURRENCY_CONFIG = {
             weekend: 'Weekend! ',
             beforeWork: 'Not Started Yet ',
             afterWork: 'Done for Today! ',
-            noHoliday: 'No Upcoming Holiday'
+            noHoliday: 'No Upcoming Holiday',
+            danmakuPlaceholder: 'Send a comment...',
+            sendDanmaku: 'Send'
         }
     },
     CNY: {
@@ -70,11 +260,13 @@ const CURRENCY_CONFIG = {
             nextHoliday: '下个节日',
             workdaysLeft: '剩余工作日',
             earnedToday: '今日收入',
-            footer: '继续加油... 还是该摆烂了？',
+            footer: '继续加油... 或者该摆烂了？',
             weekend: '周末愉快！',
             beforeWork: '还没开始上班 ',
             afterWork: '下班啦！',
-            noHoliday: '无节假日'
+            noHoliday: '无节假日',
+            danmakuPlaceholder: '发送弹幕...',
+            sendDanmaku: '发送'
         }
     },
     EUR: {
@@ -111,7 +303,9 @@ const CURRENCY_CONFIG = {
             weekend: 'Wochenende! ',
             beforeWork: 'Noch nicht begonnen ',
             afterWork: 'Feierabend! ',
-            noHoliday: 'Keine Feiertage'
+            noHoliday: 'Keine Feiertage',
+            danmakuPlaceholder: 'Kommentar senden...',
+            sendDanmaku: 'Senden'
         }
     },
     GBP: {
@@ -150,7 +344,9 @@ const CURRENCY_CONFIG = {
             weekend: 'Weekend! ',
             beforeWork: 'Not Started Yet ',
             afterWork: 'Done for Today! ',
-            noHoliday: 'No Upcoming Holiday'
+            noHoliday: 'No Upcoming Holiday',
+            danmakuPlaceholder: 'Send a comment...',
+            sendDanmaku: 'Send'
         }
     },
     JPY: {
@@ -185,11 +381,13 @@ const CURRENCY_CONFIG = {
             nextHoliday: '次の祝日',
             workdaysLeft: '残りの勤務日',
             earnedToday: '本日の収入',
-            footer: '頑張ろう... それとも、もう休もうか？',
+            footer: '頑張って働きましょう',
             weekend: '週末です！',
             beforeWork: 'まだ始まっていません ',
             afterWork: '仕事終わり！',
-            noHoliday: '祝日なし'
+            noHoliday: '祝日なし',
+            danmakuPlaceholder: 'コメントを入力...',
+            sendDanmaku: '送信'
         }
     }
 };
@@ -222,7 +420,8 @@ function getCurrentTime() {
 
 // Format number with 3 decimal places
 function formatNumber(amount) {
-    return amount.toFixed(3);
+    // 移除小数点后多余的0
+    return amount.toFixed(2).replace(/\.?0+$/, '');
 }
 
 // Format currency with 3 decimal places
@@ -291,6 +490,10 @@ function updateInterfaceLanguage() {
     document.getElementById('earnedTodayLabel').textContent = labels.earnedToday;
     document.getElementById('editSettings').textContent = labels.editSettings;
     document.getElementById('footerMessage').textContent = labels.footer;
+    
+    // Update danmaku elements
+    document.getElementById('danmakuText').placeholder = labels.danmakuPlaceholder;
+    document.getElementById('sendDanmakuBtn').textContent = labels.sendDanmaku;
 }
 
 // Load settings from localStorage
@@ -422,7 +625,8 @@ function updateDisplays(timestamp) {
     }
     
     // Update earnings display without currency symbol
-    document.getElementById('todayEarnings').textContent = formatNumber(currentEarnings);
+    document.getElementById('todayEarnings').innerHTML = `
+        <span class="golden-text">${formatNumber(currentEarnings)}</span>`;
     
     // Update countdown display with localized messages
     const timeUntilEnd = getTimeUntilEndOfWork();
@@ -597,6 +801,35 @@ function getTimeUntilEndOfWork() {
     };
 }
 
+// 社交分享功能
+function shareToTwitter() {
+    const text = `我正在使用下班倒计时！还有 ${document.getElementById('timeUntilEndOfWork').textContent} 就下班了！`;
+    const url = window.location.href;
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+}
+
+function shareToFacebook() {
+    const url = window.location.href;
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+}
+
+function shareToReddit() {
+    const title = '下班倒计时';
+    const url = window.location.href;
+    window.open(`https://reddit.com/submit?title=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`, '_blank');
+}
+
+function shareToWeibo() {
+    const text = `我正在使用下班倒计时！还有 ${document.getElementById('timeUntilEndOfWork').textContent} 就下班了！`;
+    const url = window.location.href;
+    window.open(`http://service.weibo.com/share/share.php?url=${encodeURIComponent(url)}&title=${encodeURIComponent(text)}`, '_blank');
+}
+
+function shareToWechat() {
+    // 由于微信分享需要使用微信SDK，这里我们简单提示用户
+    alert('请截图后分享到微信');
+}
+
 // Event Listeners
 document.addEventListener('DOMContentLoaded', function() {
     // Load saved settings
@@ -648,6 +881,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Add event listener to edit settings button
     document.getElementById('editSettings').addEventListener('click', showSetup);
+    
+    // Add event listeners to share buttons
+    document.getElementById('shareToTwitter').addEventListener('click', shareToTwitter);
+    document.getElementById('shareToFacebook').addEventListener('click', shareToFacebook);
+    document.getElementById('shareToReddit').addEventListener('click', shareToReddit);
+    document.getElementById('shareToWeibo').addEventListener('click', shareToWeibo);
+    document.getElementById('shareToWechat').addEventListener('click', shareToWechat);
     
     // Show dashboard if settings exist, otherwise show setup
     if (localStorage.getItem('workSettings')) {
