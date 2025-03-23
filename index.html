@@ -94,7 +94,9 @@
             top: 20px;
             right: 20px;
             display: flex;
-            gap: 10px;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
             z-index: 1000;
         }
         
@@ -164,27 +166,272 @@
             text-shadow: 0 0 5px rgba(218, 165, 32, 0.3);
             font-weight: bold;
         }
+        
+        /* 主题设置面板样式 */
+        #themeSettingsPanel {
+            transition: transform 0.3s ease;
+        }
+        
+        #themeSettingsPanel.open {
+            transform: translateX(0);
+        }
+        
+        /* 主题设置按钮样式 */
+        .theme-button {
+            position: relative;
+        }
+        
+        .theme-button::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 8px;
+            height: 8px;
+            background-color: #3b82f6;
+            border-radius: 50%;
+        }
+        
+        /* 暗黑模式切换开关样式 */
+        #darkModeToggle:checked + div {
+            background-color: #3b82f6;
+        }
+        
+        #darkModeToggle:checked + div div {
+            transform: translateX(28px);
+        }
+        
+        /* 主题颜色按钮选中样式 */
+        .theme-color-btn.selected {
+            border-color: #000;
+            border-width: 3px;
+            transform: scale(1.1);
+        }
+        
+        /* 暗黑模式样式 */
+        body.dark-mode {
+            background-color: #1f2937;
+            color: #f3f4f6;
+        }
+        
+        body.dark-mode .countdown-card {
+            background: rgba(31, 41, 55, 0.98);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+        
+        body.dark-mode .card-label {
+            color: #d1d5db;
+        }
+        
+        body.dark-mode .share-button {
+            background: #374151;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        body.dark-mode .footer-message {
+            color: #d1d5db;
+        }
+        
+        body.dark-mode #themeSettingsPanel {
+            background-color: #1f2937;
+            color: #f3f4f6;
+        }
+        
+        body.dark-mode input, 
+        body.dark-mode select,
+        body.dark-mode button:not(.theme-color-btn):not(.share-button):not([id="saveThemeSettings"]):not([id="saveSettings"]):not([id="sendDanmakuBtn"]) {
+            background-color: #374151;
+            color: #f3f4f6;
+            border-color: #4b5563;
+        }
+        
+        body.dark-mode input::placeholder {
+            color: #9ca3af;
+        }
+        
+        /* 主题色变量 */
+        :root {
+            --primary-color: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --success-color: #059669;
+            --holiday-color: #7c3aed;
+        }
+        
+        /* 蓝色主题 (默认) */
+        body.theme-blue {
+            --primary-color: #3b82f6;
+            --primary-dark: #1d4ed8;
+        }
+        
+        /* 绿色主题 */
+        body.theme-green {
+            --primary-color: #10b981;
+            --primary-dark: #059669;
+        }
+        
+        /* 紫色主题 */
+        body.theme-purple {
+            --primary-color: #8b5cf6;
+            --primary-dark: #7c3aed;
+        }
+        
+        /* 粉色主题 */
+        body.theme-pink {
+            --primary-color: #ec4899;
+            --primary-dark: #db2777;
+        }
+        
+        /* 靛蓝主题 */
+        body.theme-indigo {
+            --primary-color: #6366f1;
+            --primary-dark: #4f46e5;
+        }
+        
+        /* 黄色主题 */
+        body.theme-yellow {
+            --primary-color: #f59e0b;
+            --primary-dark: #d97706;
+        }
+        
+        /* 红色主题 */
+        body.theme-red {
+            --primary-color: #ef4444;
+            --primary-dark: #dc2626;
+        }
+        
+        /* 灰色主题 */
+        body.theme-gray {
+            --primary-color: #6b7280;
+            --primary-dark: #4b5563;
+        }
+        
+        /* 应用主题颜色 */
+        .time-display {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+        
+        button#saveSettings,
+        button#saveThemeSettings,
+        button#sendDanmakuBtn {
+            background-color: var(--primary-color);
+        }
+        
+        button#saveSettings:hover,
+        button#saveThemeSettings:hover,
+        button#sendDanmakuBtn:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        /* 自定义背景图片 */
+        .custom-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.2;
+        }
     </style>
 </head>
 <body class="min-h-screen font-sans">
     <div class="tired-worker"></div>
     <!-- 社交分享按钮 -->
     <div class="share-buttons">
-        <button class="share-button" onclick="shareToTwitter()">
-            <svg width="20" height="20" fill="#1DA1F2" viewBox="0 0 24 24"><path d="M23.44 4.83c-.8.37-1.5.38-2.22.02.93-.56.98-.96 1.32-2.02-.88.52-1.86.9-2.9 1.1-.82-.88-2-1.43-3.3-1.43-2.5 0-4.55 2.04-4.55 4.54 0 .36.03.7.1 1.04-3.77-.2-7.12-2-9.36-4.75-.4.67-.6 1.45-.6 2.3 0 1.56.8 2.95 2 3.77-.74-.03-1.44-.23-2.05-.57v.06c0 2.2 1.56 4.03 3.64 4.44-.67.2-1.37.2-2.06.08.58 1.8 2.26 3.12 4.25 3.16C5.78 18.1 3.37 18.74 1 18.46c2 1.3 4.4 2.04 6.97 2.04 8.35 0 12.92-6.92 12.92-12.93 0-.2 0-.4-.02-.6.9-.63 1.96-1.22 2.56-2.14z"/></svg>
+        <button id="themeSettingsBtn" class="share-button theme-button mb-4">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 16c2.206 0 4-1.794 4-4s-1.794-4-4-4-4 1.794-4 4 1.794 4 4 4zm0 2c-3.314 0-6-2.686-6-6s2.686-6 6-6 6 2.686 6 6-2.686 6-6 6z"/><path d="M2.81 5.64l2.46-2.46L8.1 5.88c.8-.54 1.72-.88 2.7-.88 1.18 0 2.28.38 3.2 1l2.5-2.5 1.42 1.44-2.6 2.6c.5.8.8 1.76.8 2.76 0 1.04-.32 2.04-.92 2.9l2.56 2.56-1.42 1.42-2.46-2.46C13.38 15.36 12.26 16 11 16c-1.06 0-2.08-.34-2.9-.96L5.54 17.6 4.1 16.18l2.4-2.4c-.66-.84-1.1-1.88-1.1-3.04 0-1.38.5-2.64 1.32-3.62L4.16 4.56 2.81 5.64z"/></svg>
         </button>
-        <button class="share-button" onclick="shareToFacebook()">
+        <button class="share-button mb-2" onclick="shareToTwitter()">
+            <!-- X图标替换Twitter图标 -->
+            <svg width="20" height="20" fill="#000000" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </button>
+        <button class="share-button mb-2" onclick="shareToFacebook()">
             <svg width="20" height="20" fill="#4267B2" viewBox="0 0 24 24"><path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z"/></svg>
         </button>
-        <button class="share-button" onclick="shareToReddit()">
-            <svg width="20" height="20" fill="#FF4500" viewBox="0 0 24 24"><path d="M24 11.779c-22.196-66.233-90.385-90.422-105.912-91.863-15.523-1.442-29.593-9.94-19.295-27.505 10.302-17.566 29.304-68.684-7.248-104.681-36.564-36.14-116.512-22.462-173.094.866-56.434 23.327-53.39 7.055-51.65-8.925 1.89-16.848 32.355-111.02-60.791-122.395C311.395 220.86 154.85 370.754 99.572 457.15 16 587.607 29.208 675.873 29.208 675.873h0.58c10.009 121.819 190.787 218.869 412.328 218.869 190.5 0 350.961-71.853 398.402-169.478 0 0 51.65-116.098 11.725-134.787-39.837-18.537-0.833-0.284-0.833-0.284zm-82.145 136.669h0.064c-49.245 69.232-188.536 126.85-356.796 126.85-186.665 0-293.63-71.853-293.63-126.85 0-54.999 106.965-126.85 293.63-126.85 168.253 0 307.544 57.617 356.732 126.85h0zM419.83 436.798c162.148-15.51 295.743 34.67 299.978 111.688 4.372 77.018-123.717 144.689-285.865 160.188-162.136 15.498-295.743-34.672-300.115-111.69-4.234-77.017 123.728-144.688 286.002-160.186zm-5.97 241.434c61.90.992 113.153-28.434 114.181-65.376 1.02-36.942-48.277-68.719-110.059-69.707-61.772-1.002-113.153 28.434-114.181 65.376-1.028 36.937 48.277 68.719 110.059 69.707zm-50.176-89.53c30.061-0.969 54.232 12.887 54.232 32.976 0 19.923-24.171 39.832-54.232 40.735-30.059 0.896-54.54-19.013-54.54-38.836 0-20.072 24.481-33.906 54.54-34.875z"/></svg>
+        <button class="share-button mb-2" onclick="shareToReddit()">
+            <svg width="20" height="20" fill="#FF4500" viewBox="0 0 24 24"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg>
         </button>
-        <button class="share-button" onclick="shareToWeibo()">
-            <svg width="20" height="20" fill="#E6162D" viewBox="0 0 1024 1024"><path d="M851.4 590.193c-22.196-66.233-90.385-90.422-105.912-91.863-15.523-1.442-29.593-9.94-19.295-27.505 10.302-17.566 29.304-68.684-7.248-104.681-36.564-36.14-116.512-22.462-173.094.866-56.434 23.327-53.39 7.055-51.65-8.925 1.89-16.848 32.355-111.02-60.791-122.395C311.395 220.86 154.85 370.754 99.572 457.15 16 587.607 29.208 675.873 29.208 675.873h0.58c10.009 121.819 190.787 218.869 412.328 218.869 190.5 0 350.961-71.853 398.402-169.478 0 0 51.65-116.098 11.725-134.787-39.837-18.537-0.833-0.284-0.833-0.284zm-82.145 136.669h0.064c-49.245 69.232-188.536 126.85-356.796 126.85-186.665 0-293.63-71.853-293.63-126.85 0-54.999 106.965-126.85 293.63-126.85 168.253 0 307.544 57.617 356.732 126.85h0zM419.83 436.798c162.148-15.51 295.743 34.67 299.978 111.688 4.372 77.018-123.717 144.689-285.865 160.188-162.136 15.498-295.743-34.672-300.115-111.69-4.234-77.017 123.728-144.688 286.002-160.186zm-5.97 241.434c61.90.992 113.153-28.434 114.181-65.376 1.02-36.942-48.277-68.719-110.059-69.707-61.772-1.002-113.153 28.434-114.181 65.376-1.028 36.937 48.277 68.719 110.059 69.707zm-50.176-89.53c30.061-0.969 54.232 12.887 54.232 32.976 0 19.923-24.171 39.832-54.232 40.735-30.059 0.896-54.54-19.013-54.54-38.836 0-20.072 24.481-33.906 54.54-34.875z"/></svg>
+        <button class="share-button mb-2" onclick="shareToWeibo()">
+            <svg width="20" height="20" fill="#E6162D" viewBox="0 0 1024 1024"><path d="M851.4 590.193c-22.196-66.233-90.385-90.422-105.912-91.863-15.523-1.442-29.593-9.94-19.295-27.505 10.302-17.566 29.304-68.684-7.248-104.681-36.564-36.14-116.512-22.462-173.094.866-56.434 23.327-53.39 7.055-51.65-8.925 1.89-16.848 32.355-111.02-60.791-122.395C311.395 220.86 154.85 370.754 99.572 457.15 16 587.607 29.208 675.873 29.208 675.873h0.58c10.009 121.819 190.787 218.869 412.328 218.869 190.5 0 350.961-71.853 398.402-169.478 0 0 51.65-116.098 11.725-134.787-39.837-18.537-0.833-0.284-0.284zm-82.145 136.669h0.064c-49.245 69.232-188.536 126.85-356.796 126.85-186.665 0-293.63-71.853-293.63-126.85 0-54.999 106.965-126.85 293.63-126.85 168.253 0 307.544 57.617 356.732 126.85h0zM419.83 436.798c162.148-15.51 295.743 34.67 299.978 111.688 4.372 77.018-123.717 144.689-285.865 160.188-162.136 15.498-295.743-34.672-300.115-111.69-4.234-77.017 123.728-144.688 286.002-160.186zm-5.97 241.434c61.90.992 113.153-28.434 114.181-65.376 1.02-36.942-48.277-68.719-110.059-69.707-61.772-1.002-113.153 28.434-114.181 65.376-1.028 36.937 48.277 68.719 110.059 69.707zm-50.176-89.53c30.061-0.969 54.232 12.887 54.232 32.976 0 19.923-24.171 39.832-54.232 40.735-30.059 0.896-54.54-19.013-54.54-38.836 0-20.072 24.481-33.906 54.54-34.875z"/></svg>
         </button>
-        <button class="share-button" onclick="shareToWechat()">
+        <button class="share-button mb-2" onclick="shareToWechat()">
             <svg width="20" height="20" fill="#07C160" viewBox="0 0 24 24"><path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.295.295a.326.326 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.81-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.595-6.348zM5.959 5.69a.994.994 0 1 1 0 1.987.994.994 0 0 1 0-1.987zm5.297 0a.994.994 0 0 1 0 1.987.994.994 0 0 1 0-1.987zM19.61 8.875c-4.027 0-7.297 2.797-7.297 6.225 0 3.429 3.27 6.226 7.297 6.226.85 0 1.666-.12 2.418-.346a.735.735 0 0 1 .61.084l1.621.95a.277.277 0 0 0 .14.047c.139 0 .25-.112.25-.251 0-.061-.023-.120-.041-.181l-.332-1.262a.51.51 0 0 1 .181-.567c1.562-1.146 2.45-2.852 2.45-4.7 0-3.428-3.27-6.225-7.297-6.225zm-3.168 5.557a.846.846 0 1 1 0 1.692.846.846 0 0 1 0-1.692zm6.296 0a.846.846 0 1 1 0 1.692.846.846 0 0 1 0-1.692z"/></svg>
         </button>
+    </div>
+    
+    <!-- 主题设置面板 -->
+    <div id="themeSettingsPanel" class="fixed top-0 right-0 w-80 h-full bg-white shadow-lg transform translate-x-full transition-transform duration-300 z-50 overflow-y-auto">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-semibold" id="themeSettingsTitle">主题设置</h3>
+                <button id="closeThemeSettings" class="text-gray-500 hover:text-gray-700">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </button>
+            </div>
+            
+            <!-- 日间/夜间模式切换 -->
+            <div class="mb-6">
+                <h4 class="text-md font-medium mb-3" id="darkModeLabel">日间/夜间模式</h4>
+                <div class="flex items-center">
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="darkModeToggle" class="sr-only">
+                        <div class="relative w-14 h-7 bg-gray-200 rounded-full transition-colors duration-200 ease-in-out">
+                            <div class="absolute left-1 top-1 bg-white w-5 h-5 rounded-full transition-transform duration-200 ease-in-out"></div>
+                        </div>
+                        <span class="ml-3 text-sm" id="darkModeStatus">日间模式</span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- 颜色主题选项 -->
+            <div class="mb-6">
+                <h4 class="text-md font-medium mb-3" id="colorThemeLabel">颜色主题</h4>
+                <div class="grid grid-cols-4 gap-2">
+                    <button data-theme="blue" class="theme-color-btn w-12 h-12 rounded-full bg-blue-500 border-2 border-transparent hover:border-gray-400"></button>
+                    <button data-theme="green" class="theme-color-btn w-12 h-12 rounded-full bg-green-500 border-2 border-transparent hover:border-gray-400"></button>
+                    <button data-theme="purple" class="theme-color-btn w-12 h-12 rounded-full bg-purple-500 border-2 border-transparent hover:border-gray-400"></button>
+                    <button data-theme="pink" class="theme-color-btn w-12 h-12 rounded-full bg-pink-500 border-2 border-transparent hover:border-gray-400"></button>
+                    <button data-theme="indigo" class="theme-color-btn w-12 h-12 rounded-full bg-indigo-500 border-2 border-transparent hover:border-gray-400"></button>
+                    <button data-theme="yellow" class="theme-color-btn w-12 h-12 rounded-full bg-yellow-500 border-2 border-transparent hover:border-gray-400"></button>
+                    <button data-theme="red" class="theme-color-btn w-12 h-12 rounded-full bg-red-500 border-2 border-transparent hover:border-gray-400"></button>
+                    <button data-theme="gray" class="theme-color-btn w-12 h-12 rounded-full bg-gray-500 border-2 border-transparent hover:border-gray-400"></button>
+                </div>
+            </div>
+            
+            <!-- 自定义背景图片 -->
+            <div class="mb-6">
+                <h4 class="text-md font-medium mb-3" id="backgroundLabel">自定义背景</h4>
+                <div class="space-y-3">
+                    <div>
+                        <input type="file" id="backgroundUpload" class="hidden" accept="image/*">
+                        <button id="uploadBackgroundBtn" class="w-full py-2 px-4 bg-gray-100 text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-200">
+                            上传图片
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button data-bg="none" class="bg-btn w-full py-2 px-4 bg-white text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-100">
+                            无背景
+                        </button>
+                        <button data-bg="default" class="bg-btn w-full py-2 px-4 bg-gray-100 text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-200">
+                            默认背景
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button data-bg="pattern1" class="bg-btn w-full h-16 rounded-lg border border-gray-300 bg-cover bg-center" style="background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCI+CjxyZWN0IHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgZmlsbD0iI2ZmZiI+PC9yZWN0Pgo8Y2lyY2xlIGN4PSIxMCIgY3k9IjEwIiByPSIyIiBmaWxsPSIjZTBlMGUwIj48L2NpcmNsZT4KPC9zdmc+')"></button>
+                        <button data-bg="pattern2" class="bg-btn w-full h-16 rounded-lg border border-gray-300 bg-cover bg-center" style="background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCI+CjxyZWN0IHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgZmlsbD0iI2ZmZiI+PC9yZWN0Pgo8cGF0aCBkPSJNMCAwTDYwIDYwTTYwIDBMMCAzMEwwIDBaIiBzdHJva2U9IiNmMGYwZjAiIHN0cm9rZS13aWR0aD0iMiI+PC9wYXRoPgo8L3N2Zz4=')"></button>
+                        <button data-bg="pattern3" class="bg-btn w-full h-16 rounded-lg border border-gray-300 bg-cover bg-center" style="background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCI+CjxyZWN0IHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgZmlsbD0iI2ZmZiI+PC9yZWN0Pgo8cGF0aCBkPSJNMCAwTDYwIDYwTTYwIDBMMCA2MFwiIHN0cm9rZT0iI2YwZjBmMCIgc3Ryb2tlLXdpZHRoPSIyIj48L3BhdGg+Cjwvc3ZnPg==')"></button>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="saveThemeSettings" class="w-full bg-blue-500 text-white rounded-lg py-3 px-4 hover:bg-blue-600 transition-all">
+                保存设置
+            </button>
+        </div>
     </div>
 
     <div id="setup" class="container mx-auto px-4 py-8">

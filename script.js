@@ -162,19 +162,121 @@ document.getElementById('danmakuText').addEventListener('keypress', function(e) 
 
 // 系统弹幕
 async function sendSystemDanmaku() {
-    const messages = [
-        '马上就要下班啦！',
-        '努力工作，开心生活！',
-        '记得喝水哦～',
-        '工资快到账啦！',
-        '周末加油！'
-    ];
+    // 根据当前选择的货币/语言选择对应语言的弹幕
+    const currLang = CURRENCY_CONFIG[settings.currency].language;
     
-    // 随机选择一条消息
-    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
-    const color = danmakuColors[Math.floor(Math.random() * danmakuColors.length)];
-    createDanmaku(randomMessage, color, true);
-    await saveDanmaku(randomMessage, color);
+    // 多语言主题相关弹幕库
+    const messagesLib = {
+        en: [
+            'Almost time to clock out!',
+            'Working hard or hardly working?',
+            'Remember to stay hydrated!',
+            'Payday is coming soon!',
+            'TGIF - Thank God It\'s Friday!',
+            'Take a short break every hour!',
+            'Your salary is ticking up as we speak!',
+            'Keep your eyes on the prize!',
+            'One step closer to the weekend!',
+            'Don\'t forget to stretch!',
+            'Productivity level: Expert!',
+            'Coffee break time?',
+            'You\'ve earned $' + formatNumber(settings.dailyIncome / 2) + ' so far!',
+            'Halfway through the day!',
+            'Your bank account thanks you!',
+            'Freedom is just hours away!'
+        ],
+        zh: [
+            '马上就要下班啦！',
+            '努力工作，开心生活！',
+            '记得喝水哦～',
+            '工资快到账啦！',
+            '周末加油！',
+            '记得每小时休息一下哦！',
+            '你的工资正在不断增加中！',
+            '坚持就是胜利！',
+            '距离周末又近了一步！',
+            '别忘了做伸展运动！',
+            '生产力满满！',
+            '是咖啡时间吗？',
+            '到目前为止你已经赚了￥' + formatNumber(settings.dailyIncome / 2) + '!',
+            '已经过了半天了！',
+            '你的银行账户在感谢你！',
+            '自由就在几小时后！'
+        ],
+        de: [
+            'Fast Feierabend!',
+            'Hart arbeiten, froh leben!',
+            'Vergiss nicht, Wasser zu trinken!',
+            'Zahltag kommt bald!',
+            'Bald ist Wochenende!',
+            'Mach jede Stunde eine kurze Pause!',
+            'Dein Gehalt steigt gerade!',
+            'Durchhalten ist der Schlüssel!',
+            'Einen Schritt näher zum Wochenende!',
+            'Vergiss nicht, dich zu strecken!',
+            'Produktivitätsniveau: Experte!',
+            'Zeit für Kaffeepause?',
+            'Du hast bisher €' + formatNumber(settings.dailyIncome / 2) + ' verdient!',
+            'Halbzeit durch den Tag!',
+            'Dein Bankkonto dankt dir!',
+            'Freiheit ist nur wenige Stunden entfernt!'
+        ],
+        ja: [
+            'もうすぐ退勤時間です！',
+            '一生懸命働いて、楽しく生きましょう！',
+            '水を飲むことを忘れないでください！',
+            '給料日がもうすぐです！',
+            '週末まであと少し！',
+            '毎時間短い休憩を取りましょう！',
+            'あなたの給料は今増えています！',
+            '頑張り続けることが鍵です！',
+            '週末までもう一歩近づきました！',
+            'ストレッチを忘れないでください！',
+            '生産性レベル：エキスパート！',
+            'コーヒーブレイクの時間？',
+            'これまでに¥' + formatNumber(settings.dailyIncome / 2) + '稼ぎました！',
+            '一日の半分が経過しました！',
+            'あなたの銀行口座はあなたに感謝しています！',
+            '自由はあと数時間です！'
+        ]
+    };
+    
+    // 使用已发送弹幕追踪集以避免重复
+    if (!window.sentDanmakuSet) {
+        window.sentDanmakuSet = new Set();
+    }
+    
+    // 获取当前语言的弹幕库
+    const messages = messagesLib[currLang] || messagesLib.en;
+    
+    // 找出未发送过的弹幕
+    const unsentMessages = messages.filter(msg => !window.sentDanmakuSet.has(msg));
+    
+    // 如果所有弹幕都已发送过，则重置集合
+    if (unsentMessages.length === 0) {
+        window.sentDanmakuSet.clear();
+        // 再次过滤未发送过的弹幕
+        const resetMessages = messages.filter(msg => !window.sentDanmakuSet.has(msg));
+        // 随机选择一条消息
+        const randomMessage = resetMessages[Math.floor(Math.random() * resetMessages.length)];
+        const color = danmakuColors[Math.floor(Math.random() * danmakuColors.length)];
+        
+        // 将此消息添加到已发送集合
+        window.sentDanmakuSet.add(randomMessage);
+        
+        createDanmaku(randomMessage, color, true);
+        await saveDanmaku(randomMessage, color);
+    } else {
+        // 随机选择一条未发送过的消息
+        const randomMessage = unsentMessages[Math.floor(Math.random() * unsentMessages.length)];
+        const color = danmakuColors[Math.floor(Math.random() * danmakuColors.length)];
+        
+        // 将此消息添加到已发送集合
+        window.sentDanmakuSet.add(randomMessage);
+        
+        createDanmaku(randomMessage, color, true);
+        await saveDanmaku(randomMessage, color);
+    }
 }
 
 // 初始化时获取弹幕
@@ -240,7 +342,21 @@ const CURRENCY_CONFIG = {
             afterWork: 'Done for Today! ',
             noHoliday: 'No Upcoming Holiday',
             danmakuPlaceholder: 'Send a comment...',
-            sendDanmaku: 'Send'
+            sendDanmaku: 'Send',
+            themeSettings: 'Theme Settings',
+            darkMode: 'Dark Mode',
+            darkModeOn: 'Dark Mode',
+            darkModeOff: 'Light Mode',
+            colorTheme: 'Color Theme',
+            background: 'Background',
+            uploadImage: 'Upload Image',
+            saveSettings: 'Save Settings',
+            noBackground: 'No Background',
+            defaultBackground: 'Default Background',
+            shareTitle: 'Work Time Countdown',
+            shareText: 'I am using Work Time Countdown! Only ',
+            shareTextEnd: ' left until freedom!',
+            shareWechatTip: 'Please take a screenshot and share to WeChat'
         }
     },
     CNY: {
@@ -281,7 +397,21 @@ const CURRENCY_CONFIG = {
             afterWork: '下班啦！',
             noHoliday: '无节假日',
             danmakuPlaceholder: '发送弹幕...',
-            sendDanmaku: '发送'
+            sendDanmaku: '发送',
+            themeSettings: '主题设置',
+            darkMode: '日间/夜间模式',
+            darkModeOn: '夜间模式',
+            darkModeOff: '日间模式',
+            colorTheme: '颜色主题',
+            background: '自定义背景',
+            uploadImage: '上传图片',
+            saveSettings: '保存设置',
+            noBackground: '无背景',
+            defaultBackground: '默认背景',
+            shareTitle: '下班倒计时',
+            shareText: '我正在使用下班倒计时！还有 ',
+            shareTextEnd: ' 就下班了！',
+            shareWechatTip: '请截图后分享到微信'
         }
     },
     EUR: {
@@ -320,7 +450,21 @@ const CURRENCY_CONFIG = {
             afterWork: 'Feierabend! ',
             noHoliday: 'Keine Feiertage',
             danmakuPlaceholder: 'Kommentar senden...',
-            sendDanmaku: 'Senden'
+            sendDanmaku: 'Senden',
+            themeSettings: 'Themen-Einstellungen',
+            darkMode: 'Dunkelmodus',
+            darkModeOn: 'Dunkelmodus',
+            darkModeOff: 'Hellmodus',
+            colorTheme: 'Farbthema',
+            background: 'Hintergrund',
+            uploadImage: 'Bild hochladen',
+            saveSettings: 'Einstellungen speichern',
+            noBackground: 'Kein Hintergrund',
+            defaultBackground: 'Standard-Hintergrund',
+            shareTitle: 'Arbeitszeit-Countdown',
+            shareText: 'Ich benutze Arbeitszeit-Countdown! Nur noch ',
+            shareTextEnd: ' bis zum Feierabend!',
+            shareWechatTip: 'Bitte machen Sie einen Screenshot und teilen Sie ihn über WeChat'
         }
     },
     GBP: {
@@ -361,7 +505,21 @@ const CURRENCY_CONFIG = {
             afterWork: 'Done for Today! ',
             noHoliday: 'No Upcoming Holiday',
             danmakuPlaceholder: 'Send a comment...',
-            sendDanmaku: 'Send'
+            sendDanmaku: 'Send',
+            themeSettings: 'Theme Settings',
+            darkMode: 'Dark Mode',
+            darkModeOn: 'Dark Mode',
+            darkModeOff: 'Light Mode',
+            colorTheme: 'Colour Theme',
+            background: 'Background',
+            uploadImage: 'Upload Image',
+            saveSettings: 'Save Settings',
+            noBackground: 'No Background',
+            defaultBackground: 'Default Background',
+            shareTitle: 'Work Time Countdown',
+            shareText: 'I am using Work Time Countdown! Only ',
+            shareTextEnd: ' left until freedom!',
+            shareWechatTip: 'Please take a screenshot and share to WeChat'
         }
     },
     JPY: {
@@ -402,7 +560,21 @@ const CURRENCY_CONFIG = {
             afterWork: '仕事終わり！',
             noHoliday: '祝日なし',
             danmakuPlaceholder: 'コメントを入力...',
-            sendDanmaku: '送信'
+            sendDanmaku: '送信',
+            themeSettings: 'テーマ設定',
+            darkMode: 'ダークモード',
+            darkModeOn: 'ダークモード',
+            darkModeOff: 'ライトモード',
+            colorTheme: 'カラーテーマ',
+            background: '背景',
+            uploadImage: '画像をアップロード',
+            saveSettings: '設定を保存',
+            noBackground: '背景なし',
+            defaultBackground: 'デフォルト背景',
+            shareTitle: '勤務時間カウントダウン',
+            shareText: '勤務時間カウントダウンを使用中！あと ',
+            shareTextEnd: ' で退勤です！',
+            shareWechatTip: 'スクリーンショットを撮ってWeChatでシェアしてください'
         }
     }
 };
@@ -436,7 +608,7 @@ function getCurrentTime() {
 // Format number with 3 decimal places
 function formatNumber(amount) {
     // 移除小数点后多余的0
-    return amount.toFixed(2).replace(/\.?0+$/, '');
+    return amount.toFixed(3).replace(/\.?0+$/, '');
 }
 
 // Format currency with 3 decimal places
@@ -822,9 +994,10 @@ function getTimeUntilEndOfWork() {
 
 // 社交分享功能
 function shareToTwitter() {
-    const text = `我正在使用下班倒计时！还有 ${document.getElementById('timeUntilEndOfWork').textContent} 就下班了！`;
+    const config = CURRENCY_CONFIG[settings.currency];
+    const shareText = `${config.labels.shareText}${document.getElementById('timeUntilEndOfWork').textContent}${config.labels.shareTextEnd}`;
     const url = window.location.href;
-    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(url)}`, '_blank');
     trackEvent('Share', 'Twitter');
 }
 
@@ -835,22 +1008,25 @@ function shareToFacebook() {
 }
 
 function shareToReddit() {
-    const title = '下班倒计时';
+    const config = CURRENCY_CONFIG[settings.currency];
+    const title = config.labels.shareTitle;
     const url = window.location.href;
     window.open(`https://reddit.com/submit?title=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`, '_blank');
     trackEvent('Share', 'Reddit');
 }
 
 function shareToWeibo() {
-    const text = `我正在使用下班倒计时！还有 ${document.getElementById('timeUntilEndOfWork').textContent} 就下班了！`;
+    const config = CURRENCY_CONFIG[settings.currency];
+    const shareText = `${config.labels.shareText}${document.getElementById('timeUntilEndOfWork').textContent}${config.labels.shareTextEnd}`;
     const url = window.location.href;
-    window.open(`http://service.weibo.com/share/share.php?url=${encodeURIComponent(url)}&title=${encodeURIComponent(text)}`, '_blank');
+    window.open(`http://service.weibo.com/share/share.php?url=${encodeURIComponent(url)}&title=${encodeURIComponent(shareText)}`, '_blank');
     trackEvent('Share', 'Weibo');
 }
 
 function shareToWechat() {
     // 由于微信分享需要使用微信SDK，这里我们简单提示用户
-    alert('请截图后分享到微信');
+    const config = CURRENCY_CONFIG[settings.currency];
+    alert(config.labels.shareWechatTip);
     trackEvent('Share', 'Wechat');
 }
 
@@ -924,4 +1100,230 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         updateInterfaceLanguage();
     }
+});
+
+// 主题设置相关功能
+// 主题默认设置
+let themeSettings = {
+    darkMode: false,
+    colorTheme: 'blue',
+    background: 'default'
+};
+
+// 加载主题设置
+function loadThemeSettings() {
+    const savedThemeSettings = localStorage.getItem('themeSettings');
+    if (savedThemeSettings) {
+        themeSettings = JSON.parse(savedThemeSettings);
+        applyThemeSettings();
+    }
+}
+
+// 应用主题设置到界面
+function applyThemeSettings() {
+    // 应用暗黑模式
+    if (themeSettings.darkMode) {
+        document.body.classList.add('dark-mode');
+        document.getElementById('darkModeToggle').checked = true;
+        document.getElementById('darkModeStatus').textContent = '夜间模式';
+    } else {
+        document.body.classList.remove('dark-mode');
+        document.getElementById('darkModeToggle').checked = false;
+        document.getElementById('darkModeStatus').textContent = '日间模式';
+    }
+    
+    // 应用颜色主题
+    document.body.classList.remove('theme-blue', 'theme-green', 'theme-purple', 'theme-pink', 'theme-indigo', 'theme-yellow', 'theme-red', 'theme-gray');
+    document.body.classList.add(`theme-${themeSettings.colorTheme}`);
+    
+    // 移除所有主题颜色按钮的选中状态
+    document.querySelectorAll('.theme-color-btn').forEach(btn => {
+        btn.classList.remove('selected');
+    });
+    
+    // 添加选中状态到当前主题颜色按钮
+    const selectedThemeBtn = document.querySelector(`.theme-color-btn[data-theme="${themeSettings.colorTheme}"]`);
+    if (selectedThemeBtn) {
+        selectedThemeBtn.classList.add('selected');
+    }
+    
+    // 应用背景
+    // 首先删除任何现有的自定义背景
+    const existingBackground = document.querySelector('.custom-background');
+    if (existingBackground) {
+        existingBackground.remove();
+    }
+    
+    // 然后根据设置添加新背景
+    if (themeSettings.background === 'default') {
+        // 默认背景已在CSS中设置，不需要额外操作
+    } else if (themeSettings.background === 'none') {
+        // 隐藏默认背景
+        document.querySelector('.tired-worker').style.display = 'none';
+    } else if (themeSettings.background.startsWith('pattern')) {
+        // 应用预设图案背景
+        document.querySelector('.tired-worker').style.display = 'none';
+        const patternUrl = document.querySelector(`.bg-btn[data-bg="${themeSettings.background}"]`).style.backgroundImage;
+        
+        const customBg = document.createElement('div');
+        customBg.className = 'custom-background';
+        customBg.style.backgroundImage = patternUrl;
+        customBg.style.opacity = '0.1';
+        document.body.appendChild(customBg);
+    } else if (themeSettings.background.startsWith('data:')) {
+        // 应用自定义上传的背景图片
+        document.querySelector('.tired-worker').style.display = 'none';
+        
+        const customBg = document.createElement('div');
+        customBg.className = 'custom-background';
+        customBg.style.backgroundImage = `url('${themeSettings.background}')`;
+        document.body.appendChild(customBg);
+    }
+}
+
+// 保存主题设置
+function saveThemeSettings() {
+    localStorage.setItem('themeSettings', JSON.stringify(themeSettings));
+    
+    // 跟踪主题设置保存事件
+    trackEvent('ThemeSettings', 'Save', 
+        `DarkMode:${themeSettings.darkMode},Theme:${themeSettings.colorTheme},Background:${themeSettings.background === 'data:' ? 'custom' : themeSettings.background}`
+    );
+    
+    applyThemeSettings();
+    closeThemeSettings();
+}
+
+// 打开主题设置面板
+function openThemeSettings() {
+    document.getElementById('themeSettingsPanel').classList.add('open');
+}
+
+// 关闭主题设置面板
+function closeThemeSettings() {
+    document.getElementById('themeSettingsPanel').classList.remove('open');
+}
+
+// 处理文件上传并转换为DataURL
+function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        // 临时显示上传的图片
+        const existingBackground = document.querySelector('.custom-background');
+        if (existingBackground) {
+            existingBackground.remove();
+        }
+        
+        document.querySelector('.tired-worker').style.display = 'none';
+        
+        const customBg = document.createElement('div');
+        customBg.className = 'custom-background';
+        customBg.style.backgroundImage = `url('${e.target.result}')`;
+        document.body.appendChild(customBg);
+        
+        // 保存图片的DataURL到设置
+        themeSettings.background = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+// 更新语言标签
+function updateThemeLabels() {
+    const config = CURRENCY_CONFIG[settings.currency];
+    const labels = config.labels;
+    
+    // 更新主题设置面板的标签
+    if (labels.themeSettings) {
+        document.getElementById('themeSettingsTitle').textContent = labels.themeSettings;
+        document.getElementById('darkModeLabel').textContent = labels.darkMode;
+        document.getElementById('darkModeStatus').textContent = themeSettings.darkMode ? labels.darkModeOn : labels.darkModeOff;
+        document.getElementById('colorThemeLabel').textContent = labels.colorTheme;
+        document.getElementById('backgroundLabel').textContent = labels.background;
+        document.getElementById('uploadBackgroundBtn').textContent = labels.uploadImage;
+        document.getElementById('saveThemeSettings').textContent = labels.saveSettings;
+        
+        // 更新背景按钮文本
+        document.querySelector('.bg-btn[data-bg="none"]').textContent = labels.noBackground;
+        document.querySelector('.bg-btn[data-bg="default"]').textContent = labels.defaultBackground;
+    }
+}
+
+// 在文档加载完成后添加事件监听器
+document.addEventListener('DOMContentLoaded', function() {
+    // 已有的DOMContentLoaded事件处理在这之前
+    
+    // 加载主题设置
+    loadThemeSettings();
+    
+    // 更新主题标签
+    updateThemeLabels();
+    
+    // 主题设置按钮点击事件
+    document.getElementById('themeSettingsBtn').addEventListener('click', openThemeSettings);
+    
+    // 关闭主题设置按钮点击事件
+    document.getElementById('closeThemeSettings').addEventListener('click', closeThemeSettings);
+    
+    // 日间/夜间模式切换事件
+    document.getElementById('darkModeToggle').addEventListener('change', function() {
+        themeSettings.darkMode = this.checked;
+        document.getElementById('darkModeStatus').textContent = this.checked ? '夜间模式' : '日间模式';
+    });
+    
+    // 颜色主题按钮点击事件
+    document.querySelectorAll('.theme-color-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            themeSettings.colorTheme = this.dataset.theme;
+            
+            // 移除所有按钮的选中状态
+            document.querySelectorAll('.theme-color-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // 添加选中状态到当前按钮
+            this.classList.add('selected');
+        });
+    });
+    
+    // 背景选择按钮点击事件
+    document.querySelectorAll('.bg-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            themeSettings.background = this.dataset.bg;
+            
+            // 如果选择了"无背景"或"默认背景"
+            if (this.dataset.bg === 'none' || this.dataset.bg === 'default') {
+                // 删除任何现有的自定义背景
+                const existingBackground = document.querySelector('.custom-background');
+                if (existingBackground) {
+                    existingBackground.remove();
+                }
+                
+                // 对于"无背景"隐藏默认背景，对于"默认背景"显示默认背景
+                document.querySelector('.tired-worker').style.display = this.dataset.bg === 'none' ? 'none' : 'block';
+            }
+        });
+    });
+    
+    // 上传背景图片按钮点击事件
+    document.getElementById('uploadBackgroundBtn').addEventListener('click', function() {
+        document.getElementById('backgroundUpload').click();
+    });
+    
+    // 文件上传事件
+    document.getElementById('backgroundUpload').addEventListener('change', handleFileUpload);
+    
+    // 保存主题设置按钮点击事件
+    document.getElementById('saveThemeSettings').addEventListener('click', saveThemeSettings);
+    
+    // 货币(语言)切换时也更新主题标签
+    const originalCurrencyChangeEvent = document.getElementById('currency').onchange;
+    document.getElementById('currency').onchange = function() {
+        if (originalCurrencyChangeEvent) {
+            originalCurrencyChangeEvent.call(this);
+        }
+        updateThemeLabels();
+    };
 });
