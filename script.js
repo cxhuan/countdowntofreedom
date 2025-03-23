@@ -2,6 +2,17 @@
 const SUPABASE_URL = 'https://ncywmtlhjhzgvvjjshwo.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jeXdtdGxoamh6Z3Z2ampzaHdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2MDc5NDIsImV4cCI6MjA1ODE4Mzk0Mn0.RaBRSXov-5lY8i61mxBWRbl2yYgvTt4jwUgeQ0-Ec0g';
 
+// Google Analytics 事件跟踪函数
+function trackEvent(eventCategory, eventAction, eventLabel = null, eventValue = null) {
+    if (typeof gtag !== 'undefined') {
+        gtag('event', eventAction, {
+            'event_category': eventCategory,
+            'event_label': eventLabel,
+            'value': eventValue
+        });
+    }
+}
+
 // 创建Supabase客户端
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -70,6 +81,10 @@ async function saveDanmaku(text, color) {
             ]);
 
         if (error) throw error;
+        
+        // 跟踪弹幕发送事件
+        trackEvent('Danmaku', 'Send', text.substring(0, 30));
+        
         return data;
     } catch (error) {
         console.error('发送弹幕失败:', error);
@@ -534,6 +549,10 @@ function saveSettings() {
     settings.currency = document.getElementById('currency').value;
 
     localStorage.setItem('workSettings', JSON.stringify(settings));
+    
+    // 跟踪设置保存事件
+    trackEvent('Settings', 'Save', settings.currency, settings.dailyIncome);
+    
     showDashboard();
 }
 
@@ -806,32 +825,40 @@ function shareToTwitter() {
     const text = `我正在使用下班倒计时！还有 ${document.getElementById('timeUntilEndOfWork').textContent} 就下班了！`;
     const url = window.location.href;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+    trackEvent('Share', 'Twitter');
 }
 
 function shareToFacebook() {
     const url = window.location.href;
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+    trackEvent('Share', 'Facebook');
 }
 
 function shareToReddit() {
     const title = '下班倒计时';
     const url = window.location.href;
     window.open(`https://reddit.com/submit?title=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`, '_blank');
+    trackEvent('Share', 'Reddit');
 }
 
 function shareToWeibo() {
     const text = `我正在使用下班倒计时！还有 ${document.getElementById('timeUntilEndOfWork').textContent} 就下班了！`;
     const url = window.location.href;
     window.open(`http://service.weibo.com/share/share.php?url=${encodeURIComponent(url)}&title=${encodeURIComponent(text)}`, '_blank');
+    trackEvent('Share', 'Weibo');
 }
 
 function shareToWechat() {
     // 由于微信分享需要使用微信SDK，这里我们简单提示用户
     alert('请截图后分享到微信');
+    trackEvent('Share', 'Wechat');
 }
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', function() {
+    // 跟踪页面加载事件
+    trackEvent('App', 'Load');
+    
     // Load saved settings
     loadSettings();
     
@@ -862,6 +889,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add event listener to currency select
     document.getElementById('currency').addEventListener('change', function() {
         settings.currency = this.value;
+        // 跟踪货币变更事件
+        trackEvent('Settings', 'ChangeCurrency', this.value);
         // Update interface language immediately
         updateInterfaceLanguage();
         updateDisplays();
